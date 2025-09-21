@@ -1,47 +1,120 @@
 # InterviewOS
 
-A hiring diagnostic tool that prevents $30K wrong hires by forcing uncomfortable clarity through 40+ structured interview questions. Built with the 5 Day Sprint Framework using Next.js, TypeScript, and shadcn/ui.
+A hiring diagnostic tool that transforms vague job requirements into measurable interview questions, preventing costly hiring mistakes through structured behavioral interviews.
 
 ## Features
 
-- **40+ Structured Interview Questions**: Comprehensive question library covering technical skills, behavioral patterns, and energy alignment
-- **Custom Interview Scripts**: Generate personalized interview scripts based on specific role requirements and company culture
-- **Psychological "Nature Discovery"**: Questions designed to reveal what energizes vs exhausts candidates in their work
-- **Energy vs Exhaustion Assessment**: Structured decision-making process for candidate evaluation
+- **AI-Powered Requirement Extraction**: Uses Gemini AI to intelligently parse job descriptions
+- **40+ Targeted Questions**: Generates 6 questions per requirement plus psychological assessment questions
+- **Customizable Interview Flow**: Select, edit, and reorder questions before conducting interviews
+- **Real-time Scoring**: Pass/Fail/Maybe scoring with note-taking during interviews
+- **Comprehensive Reports**: Download interview scripts and results as PDFs
+- **Smart Categorization**: AI categorizes and organizes questions by skill type
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Getting Started
+- Next.js 15.5.3 with TypeScript
+- Tailwind CSS v4 with shadcn/ui components
+- Google Gemini 2.0 Flash API
+- jsPDF for document generation
+- @dnd-kit for drag-and-drop functionality
 
-First, run the development server:
+## Local Development
 
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/bernsmp/InterviewOS.git
+cd InterviewOS
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Add your Gemini API key to `.env.local`:
+```
+GEMINI_API_KEY=your_actual_api_key_here
+```
 
-## Learn More
+5. Run the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Visit [http://localhost:3000/interview](http://localhost:3000/interview) to start using the app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment on Netlify
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerequisites
+- A [Netlify](https://netlify.com) account
+- A [Google AI Studio](https://makersuite.google.com/app/apikey) API key
 
-## Deploy on Vercel
+### Deploy with Netlify Button
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/bernsmp/InterviewOS)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Manual Deployment
+
+1. **Fork or Clone the Repository**
+   - Fork this repo to your GitHub account or clone it
+
+2. **Connect to Netlify**
+   - Log in to Netlify
+   - Click "Add new site" → "Import an existing project"
+   - Connect your GitHub account and select the repository
+
+3. **Configure Build Settings**
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+   - Node version: 18 or higher
+
+4. **Set Environment Variables**
+   - Go to Site Settings → Environment Variables
+   - Add your environment variables:
+     ```
+     GEMINI_API_KEY=your_gemini_api_key_here
+     ```
+
+5. **Deploy**
+   - Click "Deploy site"
+   - Netlify will build and deploy your site automatically
+
+### Post-Deployment
+
+1. **Custom Domain** (optional)
+   - Go to Domain Settings in Netlify
+   - Add your custom domain
+
+2. **Environment Variables**
+   - Never commit your API keys to the repository
+   - Always use Netlify's environment variables for sensitive data
+
+## Usage Guide
+
+1. **Paste Job Description**: Start by pasting your job description
+2. **Review Requirements**: AI extracts 5-15 key requirements
+3. **Classify Requirements**: Mark as Mandatory, Trainable, or Nice-to-have
+4. **Customize Questions**: Edit, reorder, or use AI to categorize questions
+5. **Select Final Questions**: Choose which questions to include in your interview
+6. **Conduct Interview**: Score responses and take notes in real-time
+7. **Download Results**: Export interview script or results as PDF
+
+## Security Notes
+
+- API keys are only used server-side
+- No candidate data is stored permanently
+- All processing happens in your browser and through secure API calls
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)

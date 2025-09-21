@@ -23,6 +23,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { GripVertical, Pencil, Save, X } from "lucide-react";
 import type { Question, Requirement } from "@/types/interview";
 
@@ -40,6 +41,8 @@ interface SortableItemProps {
   isEditMode: boolean;
   isEditing: boolean;
   editedText: string;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
   onEdit: (id: string, text: string) => void;
   onSave: (id: string) => void;
   onCancel: () => void;
@@ -54,6 +57,8 @@ function SortableItem({
   isEditMode, 
   isEditing,
   editedText,
+  isSelected,
+  onToggleSelect,
   onEdit,
   onSave,
   onCancel,
@@ -81,6 +86,11 @@ function SortableItem({
       className="space-y-2 pb-4 border-b last:border-0"
     >
       <div className="flex items-start gap-3">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggleSelect(question.id)}
+          className="mt-1"
+        />
         {isEditMode && (
           <div
             {...attributes}
@@ -145,7 +155,9 @@ function SortableItem({
                 {question.category}
               </Badge>
             )}
-            {question.subcategory && question.subcategory !== "General" && (
+            {question.subcategory && 
+             question.subcategory !== "General" && 
+             !question.subcategory.toLowerCase().includes("requirement") && (
               <Badge variant="outline" className="text-xs">
                 {question.subcategory}
               </Badge>
@@ -168,11 +180,13 @@ interface SortableQuestionsProps {
   isEditMode: boolean;
   editingQuestionId: string | null;
   editedQuestion: string;
+  selectedQuestions: Set<string>;
   onQuestionsReorder: (questions: Question[]) => void;
   onEditQuestion: (id: string, text: string) => void;
   onSaveQuestion: (id: string) => void;
   onCancelEdit: () => void;
   onTextChange: (text: string) => void;
+  onToggleQuestion: (id: string) => void;
 }
 
 export function SortableQuestions({
@@ -181,11 +195,13 @@ export function SortableQuestions({
   isEditMode,
   editingQuestionId,
   editedQuestion,
+  selectedQuestions,
   onQuestionsReorder,
   onEditQuestion,
   onSaveQuestion,
   onCancelEdit,
   onTextChange,
+  onToggleQuestion,
 }: SortableQuestionsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -248,6 +264,8 @@ export function SortableQuestions({
                   isEditMode={isEditMode}
                   isEditing={editingQuestionId === question.id}
                   editedText={editedQuestion}
+                  isSelected={selectedQuestions.has(question.id)}
+                  onToggleSelect={onToggleQuestion}
                   onEdit={onEditQuestion}
                   onSave={onSaveQuestion}
                   onCancel={onCancelEdit}

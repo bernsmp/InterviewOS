@@ -8,14 +8,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Play, Edit, Download, Pencil, Sparkles } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Play, Edit, Download, Pencil, Sparkles, Settings, CheckSquare, Square, Info } from "lucide-react";
 import { downloadInterviewPDF } from "@/lib/pdf-generator";
 import { SortableQuestions } from "@/components/sortable-questions";
 import type { InterviewScript, Question } from "@/types/interview";
 
 interface InterviewScriptViewProps {
   script: InterviewScript;
-  onStartInterview: () => void;
+  onStartInterview: (filteredScript?: InterviewScript) => void;
   onEdit: () => void;
   onUpdateScript?: (script: InterviewScript) => void;
 }
@@ -25,6 +32,12 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
   const [editedQuestion, setEditedQuestion] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCategorizing, setIsCategorizing] = useState(false);
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(
+    new Set([
+      ...script.questions.map(q => q.id),
+      ...script.natureDiscoveryQuestions.map(q => q.id)
+    ])
+  );
   const mandatoryCount = script.requirements.filter(r => r.priority === "mandatory").length;
   const trainableCount = script.requirements.filter(r => r.priority === "trainable").length;
   const niceToHaveCount = script.requirements.filter(r => r.priority === "nice-to-have").length;
@@ -78,37 +91,97 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
     }
   };
 
+  const handleToggleQuestion = (questionId: string) => {
+    const newSelected = new Set(selectedQuestions);
+    if (newSelected.has(questionId)) {
+      newSelected.delete(questionId);
+    } else {
+      newSelected.add(questionId);
+    }
+    setSelectedQuestions(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedQuestions(new Set([
+      ...script.questions.map(q => q.id),
+      ...script.natureDiscoveryQuestions.map(q => q.id)
+    ]));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedQuestions(new Set());
+  };
+
+  const handleStartInterviewWithSelected = () => {
+    // Filter the script to only include selected questions
+    const filteredQuestions = script.questions.filter(q => selectedQuestions.has(q.id));
+    const filteredNatureQuestions = script.natureDiscoveryQuestions.filter(q => selectedQuestions.has(q.id));
+    
+    const filteredScript = {
+      ...script,
+      questions: [...filteredQuestions, ...filteredNatureQuestions],
+      natureDiscoveryQuestions: [] // Empty since we've combined them above
+    };
+    onStartInterview(filteredScript);
+  };
+
   return (
-    <div className="space-y-6">
-      <Card>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Interview Script Ready</CardTitle>
-              <CardDescription>
-                {script.questions.length + script.natureDiscoveryQuestions.length} questions generated
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onEdit}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Requirements
-              </Button>
-              <Button 
-                variant={isEditMode ? "default" : "outline"} 
-                onClick={() => setIsEditMode(!isEditMode)}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                {isEditMode ? "Done Editing" : "Edit Questions"}
-              </Button>
-              <Button variant="outline" onClick={() => downloadInterviewPDF(script)}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-              <Button onClick={onStartInterview}>
-                <Play className="mr-2 h-4 w-4" />
-                Start Interview
-              </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Interview Script Ready</CardTitle>
+                <CardDescription>
+                  {script.questions.length + script.natureDiscoveryQuestions.length} questions • {selectedQuestions.size} selected
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={onEdit}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Requirements
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Go back to edit job requirements</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant={isEditMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setIsEditMode(!isEditMode)}
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        {isEditMode ? "Done" : "Customize"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isEditMode ? "Exit customization mode" : "Edit questions, reorder, or use AI to categorize"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="h-8 w-px bg-border" />
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => downloadInterviewPDF(script)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                  </Button>
+                  <Button 
+                    onClick={handleStartInterviewWithSelected}
+                    disabled={selectedQuestions.size === 0}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Interview
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -202,20 +275,57 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
                     Generated from requirements
                   </CardDescription>
                 </div>
-                {isEditMode && (
+                <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={handleCategorizeQuestions}
-                    disabled={isCategorizing}
+                    onClick={selectedQuestions.size === (script.questions.length + script.natureDiscoveryQuestions.length) ? handleDeselectAll : handleSelectAll}
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    {isCategorizing ? "Categorizing..." : "AI Categorize & Order"}
+                    {selectedQuestions.size === (script.questions.length + script.natureDiscoveryQuestions.length) ? (
+                      <>
+                        <Square className="mr-2 h-4 w-4" />
+                        Deselect All
+                      </>
+                    ) : (
+                      <>
+                        <CheckSquare className="mr-2 h-4 w-4" />
+                        Select All
+                      </>
+                    )}
                   </Button>
-                )}
+                  {isEditMode && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCategorizeQuestions}
+                      disabled={isCategorizing}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      {isCategorizing ? "Categorizing..." : "AI Categorize & Order"}
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="font-semibold text-sm">Select Your Final Interview Questions</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Check the questions you want to include in your interview. Uncheck any questions you want to skip. 
+                      {!isEditMode && " Click 'Customize' to edit or reorder questions."}
+                    </p>
+                    {isEditMode && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        <span className="font-medium">Customize Mode:</span> Click the pencil icon to edit questions, 
+                        drag the grip handles to reorder, or use "AI Categorize & Order" to organize automatically.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
               <ScrollArea className="h-[500px] pr-4">
                 <SortableQuestions
                   questions={script.questions}
@@ -223,11 +333,13 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
                   isEditMode={isEditMode}
                   editingQuestionId={editingQuestionId}
                   editedQuestion={editedQuestion}
+                  selectedQuestions={selectedQuestions}
                   onQuestionsReorder={handleQuestionsReorder}
                   onEditQuestion={handleEditQuestion}
                   onSaveQuestion={handleSaveQuestion}
                   onCancelEdit={handleCancelEdit}
                   onTextChange={setEditedQuestion}
+                  onToggleQuestion={handleToggleQuestion}
                 />
               </ScrollArea>
             </CardContent>
@@ -243,10 +355,27 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="font-semibold text-sm">Psychological Assessment Questions</h4>
+                    <p className="text-sm text-muted-foreground">
+                      These questions reveal what naturally energizes vs exhausts candidates. 
+                      They help identify if someone will thrive in your specific role and environment.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="space-y-6">
                 {script.natureDiscoveryQuestions.map((question, index) => (
                   <div key={question.id} className="space-y-2">
                     <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedQuestions.has(question.id)}
+                        onCheckedChange={() => handleToggleQuestion(question.id)}
+                        className="mt-1"
+                      />
                       <span className="text-sm font-medium text-muted-foreground">
                         {index + 1}.
                       </span>
@@ -265,5 +394,6 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
         </TabsContent>
       </Tabs>
     </div>
+    </TooltipProvider>
   );
 }

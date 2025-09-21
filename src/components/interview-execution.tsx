@@ -18,9 +18,28 @@ interface InterviewExecutionProps {
 }
 
 export function InterviewExecution({ script, onComplete, onBack }: InterviewExecutionProps) {
-  const allQuestions = [...script.questions, ...script.natureDiscoveryQuestions];
+  // Only use the questions that were passed in the script (already filtered)
+  const allQuestions = script.questions;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, InterviewResponse>>({});
+  
+  // Safety check
+  if (allQuestions.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>No Questions Selected</CardTitle>
+          <CardDescription>Please go back and select at least one question.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Questions
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
   
   const currentQuestion = allQuestions[currentIndex];
   const progress = ((currentIndex + 1) / allQuestions.length) * 100;

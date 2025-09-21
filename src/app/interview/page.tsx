@@ -4,12 +4,15 @@ import { useState } from "react";
 import { DefinitionCascade } from "@/components/definition-cascade";
 import { InterviewScriptView } from "@/components/interview-script-view";
 import { InterviewExecution } from "@/components/interview-execution";
+import { InterviewSummary } from "@/components/interview-summary";
+import { downloadInterviewResultsPDF } from "@/lib/interview-results-pdf";
 import { generateInterviewQuestions, natureDiscoveryQuestions } from "@/lib/question-generator";
-import type { Requirement, InterviewScript } from "@/types/interview";
+import type { Requirement, InterviewScript, InterviewResponse } from "@/types/interview";
 
 export default function InterviewPage() {
-  const [step, setStep] = useState<"setup" | "script" | "execute">("setup");
+  const [step, setStep] = useState<"setup" | "script" | "execute" | "complete">("setup");
   const [interviewScript, setInterviewScript] = useState<InterviewScript | null>(null);
+  const [interviewResponses, setInterviewResponses] = useState<InterviewResponse[]>([]);
 
   const handleSetupComplete = (jobDescription: string, requirements: Requirement[]) => {
     const questions = generateInterviewQuestions(requirements);
@@ -30,13 +33,24 @@ export default function InterviewPage() {
     setStep("script");
   };
 
-  const handleStartInterview = () => {
+  const handleStartInterview = (filteredScript?: InterviewScript) => {
+    if (filteredScript) {
+      setInterviewScript(filteredScript);
+    }
     setStep("execute");
   };
 
-  const handleInterviewComplete = () => {
+  const handleInterviewComplete = (responses: InterviewResponse[]) => {
     // Handle completed interview
-    console.log("Interview completed");
+    console.log("Interview completed with responses:", responses);
+    setInterviewResponses(responses);
+    setStep("complete");
+  };
+
+  const handleDownloadResults = () => {
+    if (interviewScript) {
+      downloadInterviewResultsPDF(interviewScript, interviewResponses);
+    }
   };
 
   return (
@@ -66,6 +80,16 @@ export default function InterviewPage() {
           script={interviewScript}
           onComplete={handleInterviewComplete}
           onBack={() => setStep("script")}
+        />
+      )}
+
+      {step === "complete" && interviewScript && (
+        <InterviewSummary
+          script={interviewScript}
+          responses={interviewResponses}
+          onDownloadPDF={handleDownloadResults}
+          onStartNew={() => setStep("setup")}
+          onBackToQuestions={() => setStep("script")}
         />
       )}
     </div>
