@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -27,11 +26,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { GripVertical, Pencil, Save, X } from "lucide-react";
 import type { Question, Requirement } from "@/types/interview";
 
-interface CategorizedQuestion extends Question {
+type CategorizedQuestion = Question & {
   category?: string;
   subcategory?: string;
   importance?: number;
-}
+};
 
 interface SortableItemProps {
   id: string;
@@ -163,7 +162,7 @@ function SortableItem({
               </Badge>
             )}
           </div>
-          {question.expectedBehavior && (
+          {'expectedBehavior' in question && question.expectedBehavior && (
             <p className="text-xs text-muted-foreground">
               Expected: {question.expectedBehavior}
             </p>
@@ -175,13 +174,13 @@ function SortableItem({
 }
 
 interface SortableQuestionsProps {
-  questions: Question[];
+  questions: unknown[];
   requirements: Requirement[];
   isEditMode: boolean;
   editingQuestionId: string | null;
   editedQuestion: string;
   selectedQuestions: Set<string>;
-  onQuestionsReorder: (questions: Question[]) => void;
+  onQuestionsReorder: (questions: unknown[]) => void;
   onEditQuestion: (id: string, text: string) => void;
   onSaveQuestion: (id: string) => void;
   onCancelEdit: () => void;
@@ -214,8 +213,8 @@ export function SortableQuestions({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = questions.findIndex(q => q.id === active.id);
-      const newIndex = questions.findIndex(q => q.id === over.id);
+      const oldIndex = questions.findIndex((q: unknown) => (q as { id: string }).id === active.id);
+      const newIndex = questions.findIndex((q: unknown) => (q as { id: string }).id === over.id);
       
       const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
       onQuestionsReorder(reorderedQuestions);
@@ -224,7 +223,6 @@ export function SortableQuestions({
 
   // Group questions by category
   const categorizedQuestions = questions as CategorizedQuestion[];
-  const categories = new Map<string, CategorizedQuestion[]>();
   let currentCategory = "";
 
   return (
@@ -234,16 +232,19 @@ export function SortableQuestions({
       onDragEnd={handleDragEnd}
     >
       <SortableContext
-        items={questions.map(q => q.id)}
+        items={questions.map((q: unknown) => (q as { id: string }).id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-4">
           {categorizedQuestions.map((question, index) => {
-            const requirement = requirements.find(r => r.id === question.requirementId);
-            const showCategoryHeader = question.category && question.category !== currentCategory;
+            const requirement = 'requirementId' in question 
+              ? requirements.find(r => r.id === (question as { requirementId?: string }).requirementId) 
+              : undefined;
+            const questionCategory = (question as unknown as Record<string, unknown>).category as string | undefined;
+            const showCategoryHeader = questionCategory && questionCategory !== currentCategory;
             
             if (showCategoryHeader) {
-              currentCategory = question.category;
+              currentCategory = questionCategory;
             }
 
             return (

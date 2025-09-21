@@ -27,7 +27,7 @@ For each question, return:
 - importance: 1-10 score for how critical this question is
 
 Questions:
-${questions.map((q: any, i: number) => `${i + 1}. ${q.question}`).join('\n')}
+${questions.map((q: { question: string }, i: number) => `${i + 1}. ${q.question}`).join('\n')}
 
 Return ONLY a JSON array with objects containing: id, category, subcategory, importance
 Example: [{"id": "q1", "category": "Technical Skills", "subcategory": "Programming Languages", "importance": 8}]`;
@@ -45,8 +45,8 @@ Example: [{"id": "q1", "category": "Technical Skills", "subcategory": "Programmi
     const categorizedData = JSON.parse(jsonMatch[0]);
     
     // Map the categorization back to the original questions
-    const categorizedQuestions = questions.map((q: any, index: number) => {
-      const categoryData = categorizedData.find((c: any) => 
+    const categorizedQuestions = questions.map((q: { id: string; question: string }, index: number) => {
+      const categoryData = categorizedData.find((c: { id: string }) => 
         c.id === q.id || c.id === `q${index + 1}`
       );
       
@@ -68,7 +68,7 @@ Example: [{"id": "q1", "category": "Technical Skills", "subcategory": "Programmi
       "Other"
     ];
 
-    categorizedQuestions.sort((a: any, b: any) => {
+    categorizedQuestions.sort((a: { category: string; importance: number }, b: { category: string; importance: number }) => {
       const categoryDiff = categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
       if (categoryDiff !== 0) return categoryDiff;
       return b.importance - a.importance; // Higher importance first

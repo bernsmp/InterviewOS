@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, FileText, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Download, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import type { InterviewScript, InterviewResponse } from "@/types/interview";
 
 interface InterviewSummaryProps {

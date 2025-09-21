@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -15,10 +13,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Play, Edit, Download, Pencil, Sparkles, Settings, CheckSquare, Square, Info } from "lucide-react";
+import { Play, Edit, Download, Sparkles, Settings, CheckSquare, Square, Info } from "lucide-react";
 import { downloadInterviewPDF } from "@/lib/pdf-generator";
 import { SortableQuestions } from "@/components/sortable-questions";
-import type { InterviewScript, Question } from "@/types/interview";
+import type { InterviewScript } from "@/types/interview";
 
 interface InterviewScriptViewProps {
   script: InterviewScript;
@@ -63,9 +61,9 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
     setEditedQuestion("");
   };
 
-  const handleQuestionsReorder = (reorderedQuestions: Question[]) => {
+  const handleQuestionsReorder = (reorderedQuestions: unknown[]) => {
     if (onUpdateScript) {
-      onUpdateScript({ ...script, questions: reorderedQuestions });
+      onUpdateScript({ ...script, questions: reorderedQuestions as typeof script.questions });
     }
   };
 
@@ -117,9 +115,16 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
     const filteredQuestions = script.questions.filter(q => selectedQuestions.has(q.id));
     const filteredNatureQuestions = script.natureDiscoveryQuestions.filter(q => selectedQuestions.has(q.id));
     
+    // Convert nature questions to the InterviewQuestion format
+    const convertedNatureQuestions = filteredNatureQuestions.map(nq => ({
+      ...nq,
+      category: 'nature-discovery' as const,
+      requirementId: undefined
+    }));
+    
     const filteredScript = {
       ...script,
-      questions: [...filteredQuestions, ...filteredNatureQuestions],
+      questions: [...filteredQuestions, ...convertedNatureQuestions],
       natureDiscoveryQuestions: [] // Empty since we've combined them above
     };
     onStartInterview(filteredScript);
@@ -320,7 +325,7 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
                     {isEditMode && (
                       <p className="text-sm text-muted-foreground mt-2">
                         <span className="font-medium">Customize Mode:</span> Click the pencil icon to edit questions, 
-                        drag the grip handles to reorder, or use "AI Categorize & Order" to organize automatically.
+                        drag the grip handles to reorder, or use &quot;AI Categorize &amp; Order&quot; to organize automatically.
                       </p>
                     )}
                   </div>

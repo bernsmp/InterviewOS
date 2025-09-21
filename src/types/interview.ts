@@ -26,6 +26,9 @@ export interface InterviewResponse {
   notes: string;
 }
 
+// Union type for all question types
+export type Question = InterviewQuestion | NatureDiscoveryQuestion;
+
 export interface InterviewScript {
   id: string;
   companyName: string;
