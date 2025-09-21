@@ -1,0 +1,86 @@
+---
+description: 5 Day Sprint Framework - Task-driven development workflows with Claude Code and strict role separation
+globs: **/*
+alwaysApply: true
+---
+
+# 5 Day Sprint Framework - Workflow Rules
+
+## Role Separation (CRITICAL)
+- **Cursor Chat**: Planning, task creation, project management, and coordination
+- **Claude Code**: Implementation, coding, and technical execution
+- **NEVER mix roles**: Cursor Chat does NOT write code directly
+
+## Environment Variables (SECURITY FIRST)
+- ALL API keys and secrets stored in `.env.local` (git ignored)
+- Use `process.env.VARIABLE_NAME` in code, NEVER hardcode credentials
+- `.env.local` contains project context and configuration
+- Never commit sensitive data to git
+
+## Claude Code Prompt Format (MANDATORY)
+- **PLAIN TEXT ONLY** - no markdown, bullets, or formatting
+- **Copy-pasteable prompts** for easy use
+- **Include mandatory feedback instruction**: "After completing all tasks from this prompt, provide a 1-line feedback summary to Cursor Chat about what was accomplished."
+- **Clear, actionable instructions** with specific requirements
+
+## Code Writing Restrictions
+- **Cursor Chat**: NO direct code implementation
+- **Redirect to Claude Code**: For any coding requests
+- **Create systematic tasks**: Break down complex features
+- **Coordinate only**: Let Claude Code agents implement
+
+## Clarification Protocol
+- **Ask questions first**: When requirements are unclear
+- **Confirm understanding**: Before proceeding with tasks
+- **Never assume**: Gather all necessary information upfront
+- **User approval**: Required before major implementations
+
+## Project Management
+- **Systematic task creation**: Use todo_write for complex projects
+- **Progress tracking**: Update todos as work completes
+- **Feature-by-feature approach**: Build incrementally
+- **Localhost testing**: Mandatory before deployment
+
+## Web Search Requirements
+- **Research before implementation**: Use web_search for current information
+- **Verify API documentation**: Check latest versions and methods
+- **Stay current**: Use up-to-date best practices and libraries
+
+## Security Principles
+- **No hardcoded secrets**: All credentials in environment variables
+- **Secure defaults**: Follow security best practices
+- **Validate inputs**: Implement proper validation and sanitization
+- **Use HTTPS**: Always use secure connections for APIs
+
+## shadcn/ui Ecosystem-First Approach
+- **Use official components**: Install via `npx shadcn add [component]`
+- **Reference documentation**: Link to official shadcn/ui docs
+- **Complete ecosystem**: Leverage blocks, themes, and components
+- **TypeScript integration**: Ensure proper type safety
+- **Responsive design**: Built-in mobile and desktop support
+
+## Development Workflow
+1. **Project discussion** → Define requirements
+2. **Feature building** → Implement with shadcn/ui
+3. **Local testing** → Verify on localhost
+4. **User approval** → Confirm before deployment
+5. **Production deployment** → Deploy to Vercel
+
+## Quality Standards
+- **No console errors**: Clean browser console
+- **TypeScript compliance**: Proper type safety
+- **Accessibility**: Built-in ARIA labels and keyboard navigation
+- **Performance**: Optimized builds and loading
+- **Responsive**: Mobile and desktop compatibility
+
+## Communication Standards
+- **Clear instructions**: Specific, actionable tasks
+- **Progress updates**: Regular status communication
+- **User confirmation**: Required for major changes
+- **Documentation**: Maintain clear project documentation
+
+## Error Handling
+- **Graceful failures**: Handle errors appropriately
+- **User feedback**: Clear error messages
+- **Fallback strategies**: Alternative approaches when needed
+- **Debugging support**: Provide troubleshooting guidance
