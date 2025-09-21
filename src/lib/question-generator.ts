@@ -1,55 +1,16 @@
 import type { Requirement, InterviewQuestion, NatureDiscoveryQuestion } from "@/types/interview";
 
-// Question templates for different types of requirements
-const questionTemplates = {
-  experience: [
-    "Tell me about a specific time when you {requirement}. What was the situation and outcome?",
-    "Describe your most challenging experience with {requirement}. How did you handle it?",
-    "Walk me through a project where you had to {requirement}. What was your approach?",
-    "Give me an example of when your {requirement} skills made a significant impact.",
-    "What's the most complex {requirement} challenge you've faced? How did you solve it?"
-  ],
-  skill: [
-    "How would you rate your {requirement} skills from 1-10? Give me examples that justify your rating.",
-    "Tell me about a time when you had to learn {requirement} quickly. What was your process?",
-    "Describe a situation where your {requirement} expertise was critical to success.",
-    "What's your approach to staying current with {requirement}?",
-    "Give me three examples of how you've applied {requirement} in your work."
-  ],
-  knowledge: [
-    "Explain {requirement} as if I'm a junior team member. What are the key concepts?",
-    "How do you apply {requirement} in practical situations? Give specific examples.",
-    "What common mistakes do people make with {requirement}? How do you avoid them?",
-    "Describe a time when your understanding of {requirement} helped solve a problem.",
-    "What resources do you use to deepen your {requirement} knowledge?"
-  ],
-  soft_skill: [
-    "Give me an example of when you demonstrated strong {requirement}.",
-    "Tell me about a time when {requirement} was challenged. How did you respond?",
-    "How do you develop and maintain {requirement} in your daily work?",
-    "Describe a situation where lack of {requirement} caused problems. What did you learn?",
-    "What does {requirement} mean to you in a professional context? Give examples."
-  ],
-  general: [
-    "Describe your experience with {requirement}.",
-    "How have you demonstrated {requirement} in your previous roles?",
-    "What's your approach to {requirement}?",
-    "Tell me about a specific achievement related to {requirement}.",
-    "How would your previous colleagues rate your {requirement}? Why?"
-  ]
-};
-
-// Nature discovery questions - fixed set
+// Nature discovery questions - EXACT scripts
 export const natureDiscoveryQuestions: NatureDiscoveryQuestion[] = [
   {
     id: "nature-1",
-    question: "Think about your best day at work in the last 6 months. Walk me through what made it great - what were you doing, who were you working with, what did you accomplish?",
-    purpose: "Identifies what energizes the candidate and their ideal work environment"
+    question: "I want you to think back. I don't care where you were working, but think back to a day and it was like the worst day ever. I mean, it dragged on. It was miserable. By the time you got home that night, you didn't even have enough energy to lift the remote. Can you think of a day like that? What happened that day?",
+    purpose: "Reveals what exhausts the candidate and potential mismatches"
   },
   {
     id: "nature-2",
-    question: "Now think about a day that really drained you. What made it exhausting - was it the type of work, the people, the environment, or something else?",
-    purpose: "Reveals what exhausts the candidate and potential mismatches"
+    question: "Now think back to a day that flew by. You couldn't believe it was over. You had so much energy you could run a marathon. You have a day like that? What happened that day?",
+    purpose: "Identifies what energizes the candidate and their ideal work environment"
   },
   {
     id: "nature-3",
@@ -63,36 +24,6 @@ export const natureDiscoveryQuestions: NatureDiscoveryQuestion[] = [
   }
 ];
 
-function categorizeRequirement(requirement: string): keyof typeof questionTemplates {
-  const text = requirement.toLowerCase();
-  
-  if (text.includes("experience") || text.includes("years")) {
-    return "experience";
-  } else if (
-    text.includes("proficient") || 
-    text.includes("skilled") || 
-    text.includes("expertise") ||
-    text.includes("ability")
-  ) {
-    return "skill";
-  } else if (
-    text.includes("knowledge") || 
-    text.includes("understanding") || 
-    text.includes("familiar")
-  ) {
-    return "knowledge";
-  } else if (
-    text.includes("communication") || 
-    text.includes("leadership") || 
-    text.includes("teamwork") ||
-    text.includes("problem-solving") ||
-    text.includes("collaboration")
-  ) {
-    return "soft_skill";
-  }
-  
-  return "general";
-}
 
 function cleanRequirement(requirement: string): string {
   // Remove common prefixes and clean up the requirement text
@@ -114,55 +45,56 @@ function cleanRequirement(requirement: string): string {
 }
 
 export function generateQuestionsForRequirement(requirement: Requirement): InterviewQuestion[] {
-  const category = categorizeRequirement(requirement.text);
-  const templates = questionTemplates[category];
+  const cleanedReq = cleanRequirement(requirement.text);
   const questions: InterviewQuestion[] = [];
   
-  // Generate 3-5 questions per requirement based on priority
-  const questionCount = requirement.priority === "mandatory" ? 5 : 
-                       requirement.priority === "trainable" ? 4 : 3;
+  // Generate exactly 6 questions per requirement
   
-  // Use different templates and add variations
-  for (let i = 0; i < questionCount && i < templates.length; i++) {
-    const template = templates[i];
-    const cleanedReq = cleanRequirement(requirement.text);
-    
-    const question = template.replace("{requirement}", cleanedReq);
-    
+  // 3 Factual/Historical Questions
+  const factualQuestions = [
+    `Tell me about your experience with ${cleanedReq}. What specific projects or roles have you used this in?`,
+    `Describe a time when your ${cleanedReq} skills were critical to solving a problem. What was the situation and outcome?`,
+    `Walk me through your most challenging experience involving ${cleanedReq}. How did you handle it and what did you learn?`
+  ];
+  
+  factualQuestions.forEach((question, index) => {
     questions.push({
-      id: `${requirement.id}-q${i + 1}`,
+      id: `${requirement.id}-factual-${index + 1}`,
       question,
       requirementId: requirement.id,
       category: "requirement",
-      expectedBehavior: getExpectedBehavior(requirement)
+      expectedBehavior: "Specific examples with clear details about their experience"
     });
-  }
+  });
   
-  // Add follow-up questions for mandatory requirements
-  if (requirement.priority === "mandatory") {
+  // 2 Scenario Questions
+  const scenarioQuestions = [
+    `Imagine you're assigned a project that requires advanced ${cleanedReq} skills but you're missing some knowledge. How would you approach this?`,
+    `If a junior team member came to you struggling with ${cleanedReq}, how would you help them improve?`
+  ];
+  
+  scenarioQuestions.forEach((question, index) => {
     questions.push({
-      id: `${requirement.id}-followup`,
-      question: `On a scale of 1-10, how would you rate your current ${cleanRequirement(requirement.text)} abilities? What would it take to get to a 10?`,
+      id: `${requirement.id}-scenario-${index + 1}`,
+      question,
       requirementId: requirement.id,
       category: "requirement",
-      expectedBehavior: "Self-awareness of skill level and growth mindset"
+      expectedBehavior: "Demonstrates problem-solving approach and depth of understanding"
     });
-  }
+  });
+  
+  // 1 "Three Examples" Question
+  questions.push({
+    id: `${requirement.id}-examples`,
+    question: `Give me three specific examples of how you've applied ${cleanedReq} in your work. Please be specific about the context and impact.`,
+    requirementId: requirement.id,
+    category: "requirement",
+    expectedBehavior: "Three distinct, concrete examples showing depth of experience"
+  });
   
   return questions;
 }
 
-function getExpectedBehavior(requirement: Requirement): string {
-  const priority = requirement.priority;
-  
-  if (priority === "mandatory") {
-    return "Demonstrates deep expertise with multiple specific examples";
-  } else if (priority === "trainable") {
-    return "Shows basic understanding and eagerness to learn";
-  } else {
-    return "Any relevant experience is a bonus";
-  }
-}
 
 export function generateInterviewQuestions(requirements: Requirement[]): InterviewQuestion[] {
   const allQuestions: InterviewQuestion[] = [];
@@ -173,46 +105,14 @@ export function generateInterviewQuestions(requirements: Requirement[]): Intervi
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
   
-  // Generate questions for each requirement
+  // Generate 6 questions for each requirement
   sortedRequirements.forEach(requirement => {
     const questions = generateQuestionsForRequirement(requirement);
     allQuestions.push(...questions);
   });
   
-  // Ensure we have at least 40 questions
-  if (allQuestions.length < 40) {
-    // Add general behavioral questions
-    const generalQuestions: InterviewQuestion[] = [
-      {
-        id: "general-1",
-        question: "What interests you most about this role?",
-        category: "requirement"
-      },
-      {
-        id: "general-2",
-        question: "Describe a time when you had to learn something completely new for your job.",
-        category: "requirement"
-      },
-      {
-        id: "general-3",
-        question: "Tell me about your biggest professional achievement in the last year.",
-        category: "requirement"
-      },
-      {
-        id: "general-4",
-        question: "How do you prioritize when everything seems urgent?",
-        category: "requirement"
-      },
-      {
-        id: "general-5",
-        question: "Describe a time when you disagreed with your manager. How did you handle it?",
-        category: "requirement"
-      }
-    ];
-    
-    const needed = 40 - allQuestions.length;
-    allQuestions.push(...generalQuestions.slice(0, needed));
-  }
+  // With 6 questions per requirement, we need at least 7 requirements to hit 42 questions
+  // If we have fewer requirements, we'll still generate meaningful questions
   
   return allQuestions;
 }
