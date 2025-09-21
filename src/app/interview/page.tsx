@@ -57,6 +57,7 @@ export default function InterviewPage() {
           script={interviewScript}
           onStartInterview={handleStartInterview}
           onEdit={() => setStep("setup")}
+          onUpdateScript={setInterviewScript}
         />
       )}
 
@@ -64,6 +65,7 @@ export default function InterviewPage() {
         <InterviewExecution
           script={interviewScript}
           onComplete={handleInterviewComplete}
+          onBack={() => setStep("script")}
         />
       )}
     </div>

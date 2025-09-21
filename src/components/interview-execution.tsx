@@ -8,15 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Save } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, ArrowLeft } from "lucide-react";
 import type { InterviewScript, InterviewResponse } from "@/types/interview";
 
 interface InterviewExecutionProps {
   script: InterviewScript;
   onComplete: (responses: InterviewResponse[]) => void;
+  onBack?: () => void;
 }
 
-export function InterviewExecution({ script, onComplete }: InterviewExecutionProps) {
+export function InterviewExecution({ script, onComplete, onBack }: InterviewExecutionProps) {
   const allQuestions = [...script.questions, ...script.natureDiscoveryQuestions];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, InterviewResponse>>({});
@@ -80,7 +81,19 @@ export function InterviewExecution({ script, onComplete }: InterviewExecutionPro
         <CardHeader>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <CardTitle>Interview in Progress</CardTitle>
+              <div className="flex items-center gap-4">
+                {onBack && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onBack}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Questions
+                  </Button>
+                )}
+                <CardTitle>Interview in Progress</CardTitle>
+              </div>
               <Badge variant="outline">
                 Question {currentIndex + 1} of {allQuestions.length}
               </Badge>

@@ -86,33 +86,52 @@ export function generateInterviewPDF(script: InterviewScript): jsPDF {
     return req?.priority === "mandatory";
   });
 
-  // Mandatory Questions
-  if (mandatoryQuestions.length > 0) {
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Questions for Mandatory Requirements", margin, yPosition);
-    doc.setFont("helvetica", "normal");
-    yPosition += lineHeight;
+  const trainableQuestions = script.questions.filter(q => {
+    const req = script.requirements.find(r => r.id === q.requirementId);
+    return req?.priority === "trainable";
+  });
 
-    mandatoryQuestions.forEach((question, index) => {
-      checkNewPage(30);
-      const text = `${index + 1}. ${question.question}`;
-      addWrappedText(text);
-      
-      if (question.expectedBehavior) {
+  const niceToHaveQuestions = script.questions.filter(q => {
+    const req = script.requirements.find(r => r.id === q.requirementId);
+    return req?.priority === "nice-to-have";
+  });
+
+  // Helper to render questions
+  const renderQuestions = (questions: typeof script.questions, title: string) => {
+    if (questions.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(title, margin, yPosition);
+      doc.setFont("helvetica", "normal");
+      yPosition += lineHeight;
+
+      questions.forEach((question, index) => {
+        checkNewPage(30);
+        const text = `${index + 1}. ${question.question}`;
+        addWrappedText(text);
+        
+        if (question.expectedBehavior) {
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          addWrappedText(`Expected: ${question.expectedBehavior}`, 8);
+          doc.setTextColor(0);
+        }
+        
+        // Add space for notes
+        yPosition += 5;
         doc.setFontSize(8);
-        doc.setTextColor(100);
-        addWrappedText(`Expected: ${question.expectedBehavior}`, 8);
-        doc.setTextColor(0);
-      }
-      
-      // Add space for notes
-      yPosition += 5;
-      doc.setFontSize(8);
-      doc.text("Notes: _____________________________________________", margin, yPosition);
-      yPosition += lineHeight * 2;
-    });
-  }
+        doc.text("Notes: _____________________________________________", margin, yPosition);
+        yPosition += lineHeight * 2;
+      });
+
+      yPosition += lineHeight;
+    }
+  };
+
+  // Render all question categories
+  renderQuestions(mandatoryQuestions, "Questions for Mandatory Requirements");
+  renderQuestions(trainableQuestions, "Questions for Trainable Requirements");
+  renderQuestions(niceToHaveQuestions, "Questions for Nice-to-Have Requirements");
 
   // Nature Discovery Questions
   checkNewPage(30);

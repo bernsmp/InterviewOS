@@ -1,24 +1,82 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, Edit, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Play, Edit, Download, Pencil, Sparkles } from "lucide-react";
 import { downloadInterviewPDF } from "@/lib/pdf-generator";
-import type { InterviewScript } from "@/types/interview";
+import { SortableQuestions } from "@/components/sortable-questions";
+import type { InterviewScript, Question } from "@/types/interview";
 
 interface InterviewScriptViewProps {
   script: InterviewScript;
   onStartInterview: () => void;
   onEdit: () => void;
+  onUpdateScript?: (script: InterviewScript) => void;
 }
 
-export function InterviewScriptView({ script, onStartInterview, onEdit }: InterviewScriptViewProps) {
+export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdateScript }: InterviewScriptViewProps) {
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editedQuestion, setEditedQuestion] = useState<string>("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isCategorizing, setIsCategorizing] = useState(false);
   const mandatoryCount = script.requirements.filter(r => r.priority === "mandatory").length;
   const trainableCount = script.requirements.filter(r => r.priority === "trainable").length;
   const niceToHaveCount = script.requirements.filter(r => r.priority === "nice-to-have").length;
+
+  const handleEditQuestion = (questionId: string, currentText: string) => {
+    setEditingQuestionId(questionId);
+    setEditedQuestion(currentText);
+  };
+
+  const handleSaveQuestion = (questionId: string) => {
+    if (onUpdateScript) {
+      const updatedQuestions = script.questions.map(q => 
+        q.id === questionId ? { ...q, question: editedQuestion } : q
+      );
+      onUpdateScript({ ...script, questions: updatedQuestions });
+    }
+    setEditingQuestionId(null);
+    setEditedQuestion("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
+    setEditedQuestion("");
+  };
+
+  const handleQuestionsReorder = (reorderedQuestions: Question[]) => {
+    if (onUpdateScript) {
+      onUpdateScript({ ...script, questions: reorderedQuestions });
+    }
+  };
+
+  const handleCategorizeQuestions = async () => {
+    if (!onUpdateScript) return;
+    
+    setIsCategorizing(true);
+    try {
+      const response = await fetch('/api/categorize-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questions: script.questions })
+      });
+
+      if (!response.ok) throw new Error('Failed to categorize');
+      
+      const { questions: categorizedQuestions } = await response.json();
+      onUpdateScript({ ...script, questions: categorizedQuestions });
+    } catch (error) {
+      console.error('Failed to categorize questions:', error);
+    } finally {
+      setIsCategorizing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -35,6 +93,13 @@ export function InterviewScriptView({ script, onStartInterview, onEdit }: Interv
               <Button variant="outline" onClick={onEdit}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Requirements
+              </Button>
+              <Button 
+                variant={isEditMode ? "default" : "outline"} 
+                onClick={() => setIsEditMode(!isEditMode)}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                {isEditMode ? "Done Editing" : "Edit Questions"}
               </Button>
               <Button variant="outline" onClick={() => downloadInterviewPDF(script)}>
                 <Download className="mr-2 h-4 w-4" />
@@ -130,40 +195,40 @@ export function InterviewScriptView({ script, onStartInterview, onEdit }: Interv
         <TabsContent value="questions" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Interview Questions ({script.questions.length})</CardTitle>
-              <CardDescription>
-                Generated from requirements
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Interview Questions ({script.questions.length})</CardTitle>
+                  <CardDescription>
+                    Generated from requirements
+                  </CardDescription>
+                </div>
+                {isEditMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCategorizeQuestions}
+                    disabled={isCategorizing}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {isCategorizing ? "Categorizing..." : "AI Categorize & Order"}
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-4">
-                  {script.questions.map((question, index) => {
-                    const requirement = script.requirements.find(r => r.id === question.requirementId);
-                    return (
-                      <div key={question.id} className="space-y-2 pb-4 border-b last:border-0">
-                        <div className="flex items-start gap-3">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {index + 1}.
-                          </span>
-                          <div className="flex-1 space-y-2">
-                            <p className="text-sm">{question.question}</p>
-                            {requirement && (
-                              <Badge variant="outline" className="text-xs">
-                                {requirement.priority}
-                              </Badge>
-                            )}
-                            {question.expectedBehavior && (
-                              <p className="text-xs text-muted-foreground">
-                                Expected: {question.expectedBehavior}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <SortableQuestions
+                  questions={script.questions}
+                  requirements={script.requirements}
+                  isEditMode={isEditMode}
+                  editingQuestionId={editingQuestionId}
+                  editedQuestion={editedQuestion}
+                  onQuestionsReorder={handleQuestionsReorder}
+                  onEditQuestion={handleEditQuestion}
+                  onSaveQuestion={handleSaveQuestion}
+                  onCancelEdit={handleCancelEdit}
+                  onTextChange={setEditedQuestion}
+                />
               </ScrollArea>
             </CardContent>
           </Card>
