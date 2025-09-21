@@ -1,0 +1,50 @@
+export type RequirementPriority = 'mandatory' | 'trainable' | 'nice-to-have';
+
+export interface Requirement {
+  id: string;
+  text: string;
+  priority: RequirementPriority;
+}
+
+export interface InterviewQuestion {
+  id: string;
+  question: string;
+  requirementId?: string;
+  category: 'requirement' | 'nature-discovery';
+  expectedBehavior?: string;
+}
+
+export interface NatureDiscoveryQuestion {
+  id: string;
+  question: string;
+  purpose: string;
+}
+
+export interface InterviewResponse {
+  questionId: string;
+  score: 'pass' | 'fail' | 'maybe';
+  notes: string;
+}
+
+export interface InterviewScript {
+  id: string;
+  companyName: string;
+  positionTitle: string;
+  jobDescription: string;
+  requirements: Requirement[];
+  questions: InterviewQuestion[];
+  natureDiscoveryQuestions: NatureDiscoveryQuestion[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CandidateInterview {
+  id: string;
+  scriptId: string;
+  candidateName: string;
+  candidateEmail: string;
+  responses: InterviewResponse[];
+  overallScore: 'pass' | 'fail' | 'maybe';
+  notes: string;
+  interviewedAt: Date;
+}

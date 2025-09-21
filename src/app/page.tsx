@@ -83,9 +83,9 @@ export default function Home() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild size="lg" className="text-lg px-8">
-              <Link href="/application">
+              <Link href="/interview">
                 <Zap className="mr-2 h-5 w-5" />
-                View Starter Kit
+                Start Interview Builder
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-lg px-8">
