@@ -330,27 +330,40 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
   return (
     <div className="space-y-6">
       {step === "input" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 1: Job Description</CardTitle>
-            <CardDescription>
+        <Card className="border-2 border-[#E5E7EB] shadow-xl rounded-3xl overflow-hidden bg-white">
+          <div className="bg-gradient-to-r from-[#295B74] to-[#1e4358] text-white px-8 py-6">
+            <CardTitle className="text-2xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+              Step 1: Job Description
+            </CardTitle>
+            <CardDescription className="text-[#CBE1EA] text-lg mt-2">
               Paste the job description to extract requirements
             </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="job-description">Job Description</Label>
-              <Textarea
-                id="job-description"
-                placeholder="Paste the full job description here..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                rows={12}
-              />
+          </div>
+          <CardContent className="p-8 space-y-6 bg-gradient-to-b from-white to-[#F7FBFD]">
+            <div className="space-y-3">
+              <Label htmlFor="job-description" className="text-lg font-semibold text-[#295B74]" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+                Job Description
+              </Label>
+              <div className="relative">
+                <Textarea
+                  id="job-description"
+                  placeholder="Paste the full job description here..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  rows={10}
+                  className="border-2 border-[#CBE1EA] focus:border-[#6794A7] rounded-xl p-4 text-lg shadow-inner bg-white/80 backdrop-blur-sm placeholder:text-[#9CA3AF]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                />
+                <div className="absolute bottom-4 right-4 text-sm text-[#6794A7]">
+                  {jobDescription.length > 0 && `${jobDescription.length} characters`}
+                </div>
+              </div>
             </div>
             <Button 
               onClick={extractRequirements}
               disabled={!jobDescription.trim() || isExtracting}
+              className="w-full bg-gradient-to-r from-[#FC8A46] to-[#ff6b2b] hover:from-[#e87d3d] hover:to-[#ff5a1a] text-white font-bold text-lg py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              style={{ fontFamily: 'Work Sans, sans-serif' }}
             >
               {isExtracting ? (
                 <>

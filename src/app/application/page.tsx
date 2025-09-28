@@ -26,7 +26,7 @@ export default function ApplicationPage() {
                 <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                   <Target className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">InterviewOS</span>
+                <span className="text-xl font-bold">The Hiring Diagnostic</span>
               </div>
             </div>
             <Badge variant="secondary">Starter Kit Demo</Badge>
@@ -40,7 +40,7 @@ export default function ApplicationPage() {
           {/* Hero Section */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold tracking-tight">
-              Welcome to InterviewOS - Your Starter Kit
+              Welcome to The Hiring Diagnostic - Your Starter Kit
             </h1>
             <p className="text-xl text-muted-foreground">
               Experience the power of structured hiring diagnostics with this interactive demo
@@ -218,7 +218,7 @@ export default function ApplicationPage() {
             <CardHeader>
               <CardTitle>Ready to Build Your Vision?</CardTitle>
               <CardDescription>
-                This starter kit demonstrates the core functionality. Let&apos;s build the complete InterviewOS together.
+                This starter kit demonstrates the core functionality. Let&apos;s build the complete Hiring Diagnostic together.
               </CardDescription>
             </CardHeader>
             <CardContent>

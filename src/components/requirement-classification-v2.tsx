@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -133,7 +134,7 @@ export function RequirementClassificationV2({
       <Alert className="bg-blue-50 border-blue-200">
         <Info className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
-          <strong>New approach:</strong> If something is mandatory BUT you&apos;re willing to train it, 
+          If something is mandatory BUT you&apos;re willing to train it, 
           then it&apos;s not actually mandatory! This helps you avoid rejecting great candidates 
           who could learn on the job.
         </AlertDescription>
@@ -148,11 +149,23 @@ export function RequirementClassificationV2({
             }`}
           >
             <CardHeader>
-              <CardTitle className="text-lg">{req.text}</CardTitle>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="text-lg flex-1">{req.text}</CardTitle>
+                {req.ksaoCategory && (
+                  <Badge variant="secondary" className="text-xs">
+                    {req.ksaoCategory}
+                  </Badge>
+                )}
+              </div>
               {req.definition && (
-                <CardDescription className="mt-2 italic">
-                  Defined as: {req.definition}
-                </CardDescription>
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                    View definition
+                  </summary>
+                  <CardDescription className="mt-1 italic text-sm">
+                    {req.definition}
+                  </CardDescription>
+                </details>
               )}
               {req.finalClassification && (
                 <div className="mt-3">

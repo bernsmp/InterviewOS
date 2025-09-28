@@ -8,6 +8,7 @@ import { InterviewSummary } from "@/components/interview-summary";
 import { downloadInterviewResultsPDF } from "@/lib/interview-results-pdf";
 import { generateInterviewQuestions, natureDiscoveryQuestions } from "@/lib/question-generator";
 import type { Requirement, InterviewScript, InterviewResponse } from "@/types/interview";
+import Image from "next/image";
 
 export default function InterviewPage() {
   const [step, setStep] = useState<"setup" | "script" | "execute" | "complete">("setup");
@@ -54,13 +55,31 @@ export default function InterviewPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">InterviewOS</h1>
-        <p className="text-muted-foreground">
-          Transform vague job requirements into measurable interview questions
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#F7FBFD] to-white">
+      {/* Header */}
+      <header className="border-b-2 border-[#E5E7EB] bg-white shadow-md">
+        <div className="container mx-auto px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Image 
+                src="/THD Logo.png" 
+                alt="The Hiring Diagnostic" 
+                width={300}
+                height={60}
+                className="h-12 w-auto"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="mb-8">
+          <h2 className="text-lg md:text-xl lg:text-2xl text-[#4A5568] font-medium leading-relaxed">
+            Transform vague job requirements into measurable interview questions
+          </h2>
+        </div>
 
       {step === "setup" && (
         <DefinitionCascade onComplete={handleSetupComplete} />
@@ -92,6 +111,7 @@ export default function InterviewPage() {
           onBackToQuestions={() => setStep("script")}
         />
       )}
+      </div>
     </div>
   );
 }

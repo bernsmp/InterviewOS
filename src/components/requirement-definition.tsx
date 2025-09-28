@@ -176,7 +176,7 @@ export function RequirementDefinition({
                       {req.ksaoCategory}
                     </Badge>
                     {req.isVague && (
-                      <Badge variant="secondary" className="text-orange-600">
+                      <Badge className="bg-[#FC8A46] text-white hover:bg-[#e87d3d]">
                         Needs Definition
                       </Badge>
                     )}

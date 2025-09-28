@@ -16,6 +16,7 @@ import {
 import { Play, Edit, Download, Sparkles, Settings, CheckSquare, Square, Info } from "lucide-react";
 import { downloadInterviewPDF } from "@/lib/pdf-generator";
 import { SortableQuestions } from "@/components/sortable-questions";
+import { QuestionValidator } from "@/components/question-validator";
 import type { InterviewScript } from "@/types/interview";
 
 interface InterviewScriptViewProps {
@@ -353,6 +354,12 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
                   </div>
                 </div>
               </div>
+              
+              {/* Question Quality Validator */}
+              <div className="mb-4">
+                <QuestionValidator questions={script.questions} />
+              </div>
+              
               <ScrollArea className="h-[500px] pr-4">
                 <SortableQuestions
                   questions={script.questions}
