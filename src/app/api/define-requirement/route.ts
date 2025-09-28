@@ -42,36 +42,30 @@ export async function POST(request: NextRequest) {
     
     // Get industry examples if available
     const industryExamples = INDUSTRY_COMPETENCIES[industry] || INDUSTRY_COMPETENCIES.general || [];
-    const relevantExample = industryExamples[0];
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    const prompt = `You are an expert HR professional helping to define vague job requirements into specific, measurable criteria.
+    const prompt = `You are creating BRIEF, CLEAR job requirement definitions.
 
-REQUIREMENT TO DEFINE: "${requirement}"
-INDUSTRY: ${industry}
-KSAO CATEGORY: ${ksaoCategory}
+REQUIREMENT: "${requirement}"
+CATEGORY: ${ksaoCategory}
 
-${relevantExample ? `EXAMPLE FROM THIS INDUSTRY:
-Original: "${relevantExample.requirement}"
-Defined as: "${relevantExample.definedAs}"
-Measurable criteria: ${relevantExample.measurableCriteria?.join(", ")}` : ""}
+Write a concise definition (MAX 60 words) that includes:
+1. What it means (one sentence)
+2. 2-3 specific indicators or metrics
+3. Key tools/methods if relevant
 
-TASK: Transform the vague requirement into a specific, measurable definition that will generate meaningful interview questions.
+Example output:
+"Customer service means resolving inquiries professionally and efficiently. Measured by: 90%+ satisfaction scores, handling 20-30 calls daily, using CRM systems effectively."
 
-Your response should include:
-1. A clear, specific definition of what this requirement means
-2. Measurable criteria (metrics, volume, frequency, tools)
-3. Performance indicators where applicable
+Rules:
+- Be extremely concise
+- Use simple language
+- Include specific numbers
+- Focus on observable actions
+- No generic statements
 
-IMPORTANT:
-- Be specific about tools, systems, or processes
-- Include numbers/metrics where possible (e.g., "20-30 customers per day")
-- Define success criteria (e.g., "95% accuracy", "within 2 hours")
-- Focus on observable behaviors and outcomes
-- Keep it concise but comprehensive
-
-Return ONLY the specific definition as a single paragraph. Do not include any preamble or explanation.`;
+Return ONLY the definition.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

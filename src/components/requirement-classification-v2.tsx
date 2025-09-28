@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, AlertTriangle, ChevronRight, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CollapsibleText } from '@/components/ui/collapsible-text';
+import { formatDefinitionForDisplay } from '@/lib/concise-prompts';
 import type { Requirement } from '@/types/interview';
 
 interface RequirementClassificationV2Props {
@@ -157,16 +159,29 @@ export function RequirementClassificationV2({
                   </Badge>
                 )}
               </div>
-              {req.definition && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                    View definition
-                  </summary>
-                  <CardDescription className="mt-1 italic text-sm">
-                    {req.definition}
-                  </CardDescription>
-                </details>
-              )}
+              {req.definition && (() => {
+                const formatted = formatDefinitionForDisplay(req.definition);
+                return (
+                  <div className="mt-2">
+                    <CollapsibleText
+                      brief={formatted.brief}
+                      full={req.definition !== formatted.brief ? req.definition : undefined}
+                      className="text-sm text-muted-foreground"
+                      showLabel="View full definition"
+                      hideLabel="Hide definition"
+                    />
+                    {formatted.metrics && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {formatted.metrics.map((metric, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {metric}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {req.finalClassification && (
                 <div className="mt-3">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium

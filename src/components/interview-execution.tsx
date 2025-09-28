@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Save, ArrowLeft } from "lucide-react";
+import { ConciseQuestionDisplay } from "@/components/concise-question-display";
 import type { InterviewScript, InterviewResponse } from "@/types/interview";
 
 interface InterviewExecutionProps {
@@ -148,15 +149,12 @@ export function InterviewExecution({ script, onComplete, onBack }: InterviewExec
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-lg">{currentQuestion.question}</p>
-          </div>
-
-          {'expectedBehavior' in currentQuestion && currentQuestion.expectedBehavior && (
-            <div className="text-sm text-muted-foreground">
-              <strong>Expected behavior:</strong> {currentQuestion.expectedBehavior}
-            </div>
-          )}
+          <ConciseQuestionDisplay 
+            question={currentQuestion}
+            index={currentIndex + 1}
+            requirementText={requirement?.text}
+            className="p-4 bg-muted rounded-lg"
+          />
 
           <div className="space-y-4">
             <Label htmlFor="score">Score</Label>
