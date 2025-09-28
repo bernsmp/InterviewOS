@@ -24,7 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GripVertical, Pencil, Save, X } from "lucide-react";
-import type { Question, Requirement } from "@/types/interview";
+import type { Question, Requirement, InterviewQuestion } from "@/types/interview";
+import { QuestionToggleButton } from "./question-toggle-button";
 
 type CategorizedQuestion = Question & {
   category?: string;
@@ -130,42 +131,75 @@ function SortableItem({
               </div>
             </div>
           ) : (
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm flex-1">{question.question}</p>
-              {isEditMode && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onEdit(question.id, question.question)}
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
+            <>
+              {/* Show requirement title if available */}
+              {requirement && (
+                <div className="mb-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Assessing: {requirement.text}
+                  </span>
+                </div>
               )}
-            </div>
-          )}
-          <div className="flex gap-2 flex-wrap">
-            {requirement && (
-              <Badge variant="outline" className="text-xs">
-                {requirement.priority}
-              </Badge>
-            )}
-            {question.category && (
-              <Badge variant="secondary" className="text-xs">
-                {question.category}
-              </Badge>
-            )}
-            {question.subcategory && 
-             question.subcategory !== "General" && 
-             !question.subcategory.toLowerCase().includes("requirement") && (
-              <Badge variant="outline" className="text-xs">
-                {question.subcategory}
-              </Badge>
-            )}
-          </div>
-          {'expectedBehavior' in question && question.expectedBehavior && (
-            <p className="text-xs text-muted-foreground">
-              Expected: {question.expectedBehavior}
-            </p>
+              
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm flex-1 font-medium">{question.question}</p>
+                {isEditMode && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onEdit(question.id, question.question)}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex gap-2 flex-wrap items-center">
+                {requirement && (
+                  <Badge variant="outline" className="text-xs">
+                    {requirement.finalClassification || requirement.priority}
+                  </Badge>
+                )}
+                {'isSTAR' in question && question.isSTAR && (
+                  <Badge className="bg-blue-100 text-blue-800 text-xs">STAR</Badge>
+                )}
+                {/* Add expand details button if there are details to show */}
+                <QuestionToggleButton 
+                  questionId={question.id}
+                  hasDetails={
+                    (('expectedBehavior' in question && !!question.expectedBehavior) || 
+                    ('isSTAR' in question && question.isSTAR && 'followUps' in question && question.followUps && question.followUps.length > 0)) || false
+                  }
+                />
+              </div>
+              
+              {/* Collapsible details section with ARIA attributes */}
+              <div 
+                id={`details-${question.id}`} 
+                className="hidden space-y-2 mt-2"
+                role="region"
+                aria-labelledby={`toggle-${question.id}`}
+              >
+                {'expectedBehavior' in question && question.expectedBehavior && (
+                  <div className="p-2 bg-muted/50 rounded text-xs">
+                    <span className="font-medium">What to look for:</span> {question.expectedBehavior}
+                  </div>
+                )}
+                {/* Show follow-up questions if this is a STAR question */}
+                {'isSTAR' in question && question.isSTAR && 'followUps' in question && question.followUps && question.followUps.length > 0 && (
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs font-medium mb-2">Follow-up questions:</p>
+                    <ul className="space-y-1">
+                      {(question as InterviewQuestion).followUps?.map((followUp, idx) => (
+                        <li key={idx} className="text-xs text-muted-foreground ml-3">
+                          • {followUp}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

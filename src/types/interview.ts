@@ -18,6 +18,8 @@ export interface InterviewQuestion {
   requirementId?: string;
   category: 'requirement' | 'nature-discovery';
   expectedBehavior?: string;
+  isSTAR?: boolean;
+  followUps?: string[];
 }
 
 export interface NatureDiscoveryQuestion {

@@ -1,4 +1,5 @@
 import type { Requirement, InterviewQuestion, NatureDiscoveryQuestion } from "@/types/interview";
+import { generateSmartQuestions } from "./smart-question-generator";
 
 // Nature discovery questions - EXACT scripts
 export const natureDiscoveryQuestions: NatureDiscoveryQuestion[] = [
@@ -123,14 +124,13 @@ export function generateInterviewQuestions(requirements: Requirement[]): Intervi
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
   
-  // Generate 6 questions for each requirement
+  // Generate smart questions for each requirement
   sortedRequirements.forEach(requirement => {
-    const questions = generateQuestionsForRequirement(requirement);
-    allQuestions.push(...questions);
+    // Always try to use smart question generator
+    // It will handle requirements with or without definitions
+    const smartQuestions = generateSmartQuestions(requirement);
+    allQuestions.push(...smartQuestions);
   });
-  
-  // With 6 questions per requirement, we need at least 7 requirements to hit 42 questions
-  // If we have fewer requirements, we'll still generate meaningful questions
   
   return allQuestions;
 }
