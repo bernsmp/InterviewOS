@@ -1,11 +1,40 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { z } from "zod";
+
+// Input validation schema
+const categorizeQuestionsSchema = z.object({
+  questions: z.array(z.object({
+    id: z.string(),
+    question: z.string(),
+    requirementId: z.string().optional(),
+    category: z.string().optional(),
+    expectedBehavior: z.string().optional()
+  })).min(1, "At least one question is required").max(100, "Maximum 100 questions allowed")
+});
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(request: Request) {
   try {
-    const { questions } = await request.json();
+    const body = await request.json();
+    
+    // Validate input
+    const validationResult = categorizeQuestionsSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { 
+          error: "Invalid input", 
+          details: validationResult.error.issues.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        },
+        { status: 400 }
+      );
+    }
+    
+    const { questions } = validationResult.data;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 

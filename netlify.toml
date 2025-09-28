@@ -5,6 +5,11 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  # Ensure API routes work properly
+  node_bundler = "esbuild"
+  included_files = ["**"]
+
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
 

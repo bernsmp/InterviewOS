@@ -1,19 +1,40 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { withRateLimit } from "@/lib/api-middleware";
+
+// Input validation schema
+const extractRequirementsSchema = z.object({
+  jobDescription: z.string()
+    .min(50, "Job description must be at least 50 characters")
+    .max(10000, "Job description must not exceed 10,000 characters")
+    .trim()
+});
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(request: NextRequest) {
-  try {
-    const { jobDescription } = await request.json();
+  return withRateLimit(request, async (req) => {
+    try {
+      const body = await req.json();
     
-    if (!jobDescription) {
+    // Validate input
+    const validationResult = extractRequirementsSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Job description is required" },
+        { 
+          error: "Invalid input", 
+          details: validationResult.error.issues.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        },
         { status: 400 }
       );
     }
+    
+    const { jobDescription } = validationResult.data;
 
     // Use Gemini 2.0 Flash for the most cost-effective, fast responses
     // You can change this to other models like "gemini-1.5-pro" or "gemini-pro" if needed
@@ -56,8 +77,7 @@ Return ONLY a JSON array of requirement strings. Example:
         throw new Error("No valid JSON array found in response");
       }
     } catch {
-      console.error("Failed to parse Gemini response:", text);
-      // Fallback to basic extraction if Gemini fails
+      // Failed to parse Gemini response - fallback to basic extraction
       return NextResponse.json({ 
         requirements: [],
         error: "Failed to parse AI response, please try again"
@@ -65,10 +85,14 @@ Return ONLY a JSON array of requirement strings. Example:
     }
     
   } catch (error) {
-    console.error("Gemini API error:", error);
+    // Log error only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Gemini API error:", error);
+    }
     return NextResponse.json(
       { error: "Failed to extract requirements" },
       { status: 500 }
-    );
-  }
+      );
+    }
+  });
 }

@@ -197,8 +197,8 @@ export function generateSmartQuestions(requirement: Requirement): InterviewQuest
     questionCache.set(cacheKey, questions);
     
     return questions;
-  } catch (error) {
-    console.error('Failed to generate smart questions, falling back to basic questions:', error);
+  } catch {
+    // Silently fall back to basic questions
     return generateBasicQuestionsWithSTAR(requirement);
   }
 }

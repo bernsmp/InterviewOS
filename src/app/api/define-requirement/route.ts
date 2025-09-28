@@ -2,20 +2,40 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { INDUSTRY_COMPETENCIES } from "@/lib/competency-framework";
 import { categorizeRequirement } from "@/lib/ksao-framework";
+import { z } from "zod";
+
+// Input validation schema
+const defineRequirementSchema = z.object({
+  requirement: z.string()
+    .min(3, "Requirement must be at least 3 characters")
+    .max(500, "Requirement must not exceed 500 characters")
+    .trim(),
+  industry: z.string().optional().default("general")
+});
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(request: NextRequest) {
   try {
-    const { requirement, industry = "general" } = await request.json();
+    const body = await request.json();
     
-    if (!requirement) {
+    // Validate input
+    const validationResult = defineRequirementSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Requirement text is required" },
+        { 
+          error: "Invalid input", 
+          details: validationResult.error.issues.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        },
         { status: 400 }
       );
     }
+    
+    const { requirement, industry } = validationResult.data;
 
     // Get KSAO category
     const ksaoCategory = categorizeRequirement(requirement);
