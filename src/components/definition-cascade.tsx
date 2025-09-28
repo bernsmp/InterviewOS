@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ChevronRight, Loader2 } from "lucide-react";
+import { RequirementDefinition } from "./requirement-definition";
 import type { Requirement, RequirementPriority } from "@/types/interview";
 
 interface DefinitionCascadeProps {
@@ -17,7 +18,7 @@ interface DefinitionCascadeProps {
 export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
   const [jobDescription, setJobDescription] = useState("");
   const [requirements, setRequirements] = useState<Requirement[]>([]);
-  const [step, setStep] = useState<"input" | "extract" | "classify">("input");
+  const [step, setStep] = useState<"input" | "extract" | "define" | "classify">("input");
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState("");
 
@@ -423,8 +424,8 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
               <Button variant="outline" onClick={addRequirement}>
                 Add Requirement
               </Button>
-              <Button onClick={() => setStep("classify")}>
-                Classify Requirements
+              <Button onClick={() => setStep("define")}>
+                Define Requirements
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -432,10 +433,21 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
         </Card>
       )}
 
+      {step === "define" && (
+        <RequirementDefinition
+          requirements={requirements}
+          onComplete={(definedRequirements) => {
+            setRequirements(definedRequirements);
+            setStep("classify");
+          }}
+          onBack={() => setStep("extract")}
+        />
+      )}
+
       {step === "classify" && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 3: Classify Requirements</CardTitle>
+            <CardTitle>Step 4: Classify Requirements</CardTitle>
             <CardDescription>
               Categorize each requirement by priority
             </CardDescription>
