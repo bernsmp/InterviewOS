@@ -8,7 +8,8 @@
 [functions]
   # Ensure API routes work properly
   node_bundler = "esbuild"
-  included_files = ["**"]
+  external_node_modules = ["@google/generative-ai"]
+  included_files = [".env", ".env.production", ".env.local", ".env.production.local"]
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"

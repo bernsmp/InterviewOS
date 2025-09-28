@@ -41,6 +41,19 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  // Optimize for Netlify deployment
+  output: 'standalone',
+  outputFileTracingRoot: process.cwd(),
+  // Reduce serverless function size
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+      'node_modules/@radix-ui',
+      'node_modules/@dnd-kit',
+    ],
+  },
 };
 
 export default nextConfig;
