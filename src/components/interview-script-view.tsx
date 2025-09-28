@@ -36,9 +36,16 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
       ...script.natureDiscoveryQuestions.map(q => q.id)
     ])
   );
-  const mandatoryCount = script.requirements.filter(r => r.priority === "mandatory").length;
-  const trainableCount = script.requirements.filter(r => r.priority === "trainable").length;
-  const niceToHaveCount = script.requirements.filter(r => r.priority === "nice-to-have").length;
+  // Count requirements based on new classification if available, otherwise use priority
+  const mustHaveCount = script.requirements.filter(r => 
+    r.finalClassification ? r.finalClassification === 'must-have' : r.priority === "mandatory"
+  ).length;
+  const willTrainCount = script.requirements.filter(r => 
+    r.finalClassification ? r.finalClassification === 'will-train' : r.priority === "trainable"
+  ).length;
+  const niceToHaveCount = script.requirements.filter(r => 
+    r.finalClassification ? r.finalClassification === 'nice-to-have' : r.priority === "nice-to-have"
+  ).length;
 
   const handleEditQuestion = (questionId: string, currentText: string) => {
     setEditingQuestionId(questionId);
@@ -192,9 +199,9 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
-            <Badge variant="default">{mandatoryCount} Mandatory</Badge>
-            <Badge variant="secondary">{trainableCount} Trainable</Badge>
-            <Badge variant="outline">{niceToHaveCount} Nice-to-have</Badge>
+            <Badge className="bg-red-500 text-white">{mustHaveCount} Must Have on Day 1</Badge>
+            <Badge className="bg-yellow-500 text-white">{willTrainCount} Will Train</Badge>
+            <Badge className="bg-green-500 text-white">{niceToHaveCount} Nice to Have</Badge>
           </div>
         </CardContent>
       </Card>
@@ -218,15 +225,20 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
               <div className="space-y-6">
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Badge variant="default">Mandatory</Badge>
+                    <Badge className="bg-red-500 text-white">Must Have on Day 1</Badge>
                     Requirements
                   </h4>
                   <ul className="space-y-2">
                     {script.requirements
-                      .filter(r => r.priority === "mandatory")
+                      .filter(r => r.finalClassification ? r.finalClassification === 'must-have' : r.priority === "mandatory")
                       .map(req => (
-                        <li key={req.id} className="text-sm pl-4 border-l-2 border-primary">
+                        <li key={req.id} className="text-sm pl-4 border-l-2 border-red-500">
                           {req.text}
+                          {req.definition && (
+                            <span className="block text-gray-600 italic text-xs mt-1">
+                              Defined as: {req.definition}
+                            </span>
+                          )}
                         </li>
                       ))}
                   </ul>
@@ -234,32 +246,42 @@ export function InterviewScriptView({ script, onStartInterview, onEdit, onUpdate
 
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Badge variant="secondary">Trainable</Badge>
+                    <Badge className="bg-yellow-500 text-white">Will Train</Badge>
                     Requirements
                   </h4>
                   <ul className="space-y-2">
                     {script.requirements
-                      .filter(r => r.priority === "trainable")
+                      .filter(r => r.finalClassification ? r.finalClassification === 'will-train' : r.priority === "trainable")
                       .map(req => (
-                        <li key={req.id} className="text-sm pl-4 border-l-2 border-secondary">
+                        <li key={req.id} className="text-sm pl-4 border-l-2 border-yellow-500">
                           {req.text}
+                          {req.definition && (
+                            <span className="block text-gray-600 italic text-xs mt-1">
+                              Defined as: {req.definition}
+                            </span>
+                          )}
                         </li>
                       ))}
                   </ul>
                 </div>
 
-                {script.requirements.filter(r => r.priority === "nice-to-have").length > 0 && (
+                {script.requirements.filter(r => r.finalClassification ? r.finalClassification === 'nice-to-have' : r.priority === "nice-to-have").length > 0 && (
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                      <Badge variant="outline">Nice-to-have</Badge>
+                      <Badge className="bg-green-500 text-white">Nice to Have</Badge>
                       Requirements
                     </h4>
                     <ul className="space-y-2">
                       {script.requirements
-                        .filter(r => r.priority === "nice-to-have")
+                        .filter(r => r.finalClassification ? r.finalClassification === 'nice-to-have' : r.priority === "nice-to-have")
                         .map(req => (
-                          <li key={req.id} className="text-sm pl-4 border-l-2 border-muted">
+                          <li key={req.id} className="text-sm pl-4 border-l-2 border-green-500">
                             {req.text}
+                            {req.definition && (
+                              <span className="block text-gray-600 italic text-xs mt-1">
+                                Defined as: {req.definition}
+                              </span>
+                            )}
                           </li>
                         ))}
                     </ul>

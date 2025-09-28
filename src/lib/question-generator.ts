@@ -99,8 +99,26 @@ export function generateQuestionsForRequirement(requirement: Requirement): Inter
 export function generateInterviewQuestions(requirements: Requirement[]): InterviewQuestion[] {
   const allQuestions: InterviewQuestion[] = [];
   
-  // Sort requirements by priority
-  const sortedRequirements = [...requirements].sort((a, b) => {
+  // Filter requirements that should have questions generated
+  // Only generate questions for must-have and will-train classifications
+  const questionsToGenerate = requirements.filter(req => {
+    // Use finalClassification if available (from new flow), otherwise fall back to priority
+    if (req.finalClassification) {
+      return req.finalClassification === 'must-have' || 
+             req.finalClassification === 'will-train';
+    }
+    // Fallback for old flow
+    return req.priority === 'mandatory' || req.priority === 'trainable';
+  });
+  
+  // Sort requirements by classification/priority
+  const sortedRequirements = [...questionsToGenerate].sort((a, b) => {
+    // Prioritize must-have over will-train
+    if (a.finalClassification && b.finalClassification) {
+      const classificationOrder = { 'must-have': 0, 'will-train': 1, 'nice-to-have': 2 };
+      return classificationOrder[a.finalClassification] - classificationOrder[b.finalClassification];
+    }
+    // Fallback to priority-based sorting
     const priorityOrder = { "mandatory": 0, "trainable": 1, "nice-to-have": 2 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });

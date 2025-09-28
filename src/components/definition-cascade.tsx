@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ChevronRight, Loader2 } from "lucide-react";
 import { RequirementDefinition } from "./requirement-definition";
+import { RequirementClassificationV2 } from "./requirement-classification-v2";
 import type { Requirement, RequirementPriority } from "@/types/interview";
 
 interface DefinitionCascadeProps {
@@ -300,13 +300,6 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
     return result.charAt(0).toUpperCase() + result.slice(1);
   };
 
-  const updateRequirementPriority = (id: string, priority: RequirementPriority) => {
-    setRequirements(prev =>
-      prev.map(req =>
-        req.id === id ? { ...req, priority } : req
-      )
-    );
-  };
 
   const addRequirement = () => {
     const newRequirement: Requirement = {
@@ -445,73 +438,14 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
       )}
 
       {step === "classify" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 4: Classify Requirements</CardTitle>
-            <CardDescription>
-              Categorize each requirement by priority
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Mandatory:</strong> Core skills essential from day one<br />
-                <strong>Trainable:</strong> Skills that can be taught in 1-3 months<br />
-                <strong>Nice-to-have:</strong> Bonus skills that add value but aren&apos;t essential
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-4">
-              {requirements.map((req) => (
-                <div key={req.id} className="space-y-2 p-4 border rounded-lg">
-                  <p className="text-sm">{req.text}</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={req.priority === "mandatory" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateRequirementPriority(req.id, "mandatory")}
-                    >
-                      Mandatory
-                    </Button>
-                    <Button
-                      variant={req.priority === "trainable" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateRequirementPriority(req.id, "trainable")}
-                    >
-                      Trainable
-                    </Button>
-                    <Button
-                      variant={req.priority === "nice-to-have" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateRequirementPriority(req.id, "nice-to-have")}
-                    >
-                      Nice-to-have
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <Badge variant="secondary">
-                  {requirements.filter(r => r.priority === "mandatory").length} Mandatory
-                </Badge>
-                <Badge variant="secondary">
-                  {requirements.filter(r => r.priority === "trainable").length} Trainable
-                </Badge>
-                <Badge variant="secondary">
-                  {requirements.filter(r => r.priority === "nice-to-have").length} Nice-to-have
-                </Badge>
-              </div>
-              <Button onClick={handleComplete}>
-                Generate Interview Questions
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <RequirementClassificationV2
+          requirements={requirements}
+          onComplete={(classifiedRequirements) => {
+            setRequirements(classifiedRequirements);
+            handleComplete();
+          }}
+          onBack={() => setStep("define")}
+        />
       )}
     </div>
   );

@@ -4,6 +4,12 @@ export interface Requirement {
   id: string;
   text: string;
   priority: RequirementPriority;
+  definition?: string;
+  ksaoCategory?: string;
+  isMandatory?: boolean;
+  isTrainable?: boolean;
+  willingToTrain?: boolean;
+  finalClassification?: 'must-have' | 'nice-to-have' | 'will-train';
 }
 
 export interface InterviewQuestion {
