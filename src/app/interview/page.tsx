@@ -8,7 +8,7 @@ import { InterviewSummary } from "@/components/interview-summary";
 import { downloadInterviewResultsPDF } from "@/lib/interview-results-pdf";
 import { generateInterviewQuestions, natureDiscoveryQuestions } from "@/lib/question-generator";
 import type { Requirement, InterviewScript, InterviewResponse } from "@/types/interview";
-import Image from "next/image";
+import { NavigationHeader } from "@/components/navigation-header";
 
 export default function InterviewPage() {
   const [step, setStep] = useState<"setup" | "script" | "execute" | "complete">("setup");
@@ -54,25 +54,36 @@ export default function InterviewPage() {
     }
   };
 
+  const handleBack = () => {
+    if (step === "execute") {
+      setStep("script");
+    } else if (step === "script") {
+      setStep("setup");
+    } else if (step === "complete") {
+      setStep("execute");
+    }
+  };
+
+  const getBackButtonText = () => {
+    switch (step) {
+      case "script":
+        return "Back to Setup";
+      case "execute":
+        return "Back to Script";
+      case "complete":
+        return "Back to Interview";
+      default:
+        return "Back";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F7FBFD] to-white">
-      {/* Header */}
-      <header className="border-b-2 border-[#E5E7EB] bg-white shadow-md">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Image 
-                src="/THD Logo.png" 
-                alt="The Hiring Diagnostic" 
-                width={300}
-                height={60}
-                className="h-12 w-auto"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+      <NavigationHeader 
+        backButtonText={getBackButtonText()}
+        onBack={step !== "setup" ? handleBack : undefined}
+        showBackButton={true}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">

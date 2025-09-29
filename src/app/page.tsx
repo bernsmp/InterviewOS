@@ -1,33 +1,18 @@
+
 "use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, FileSearch, Filter, Star, CheckCircle } from "lucide-react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
+import { NavigationHeader } from "@/components/navigation-header";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F7FBFD] via-white to-[#F7FBFD]">
-      {/* Header */}
-      <header className="border-b-2 border-[#E5E7EB] bg-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Image 
-                src="/THD Logo.png" 
-                alt="The Hiring Diagnostic" 
-                width={300}
-                height={60}
-                className="h-12 w-auto"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+      <NavigationHeader showBackButton={false} />
 
       {/* Hero Section */}
       <HeroHighlight containerClassName="h-auto py-20">
@@ -57,6 +42,28 @@ export default function Home() {
           </h2>
         </motion.div>
       </HeroHighlight>
+
+      {/* CTA Button - Above the fold */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center">
+            <Button 
+              asChild 
+              size="lg" 
+              className="text-xl px-14 py-8 rounded-full bg-gradient-to-r from-[#FC8A46] to-[#ff6b2b] hover:from-[#e87d3d] hover:to-[#ff5a1a] text-white font-bold shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+              style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}
+            >
+              <Link href="/interview">
+                Start The Diagnostic
+                <ArrowRight className="ml-3 h-7 w-7" />
+              </Link>
+            </Button>
+            <p className="mt-4 text-[#6794A7] text-lg">
+              No signup required • Free to use
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* What It Does Section */}
       <section className="bg-white py-20 border-y-2 border-[#E5E7EB]">

@@ -6,33 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { ArrowLeft, Users, FileText, Brain, Target, Zap, Copy } from "lucide-react";
+import { Users, FileText, Brain, Target, Zap, Copy } from "lucide-react";
+import { NavigationHeader } from "@/components/navigation-header";
 
 export default function ApplicationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm dark:bg-slate-900/80">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Home
-                </Link>
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <Target className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">The Hiring Diagnostic</span>
-              </div>
-            </div>
-            <Badge variant="secondary">Starter Kit Demo</Badge>
-          </div>
-        </div>
-      </header>
+      <NavigationHeader 
+        backButtonText="Back to Home"
+        backButtonHref="/"
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
