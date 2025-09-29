@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     // Get KSAO category
     const ksaoCategory = categorizeRequirement(requirement);
     
-    // Get industry examples if available
-    const industryExamples = INDUSTRY_COMPETENCIES[industry] || INDUSTRY_COMPETENCIES.general || [];
+    // Industry competencies could be used here for more context-aware definitions
+    // const industryExamples = INDUSTRY_COMPETENCIES[industry] || INDUSTRY_COMPETENCIES.general || [];
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 

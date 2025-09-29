@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Users, FileText, Brain, Target, Zap, Copy } from "lucide-react";
+import { Users, FileText, Brain, Zap, Copy } from "lucide-react";
 import { NavigationHeader } from "@/components/navigation-header";
 
 export default function ApplicationPage() {
