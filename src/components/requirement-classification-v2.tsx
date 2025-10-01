@@ -36,24 +36,6 @@ export function RequirementClassificationV2({
     }))
   );
 
-  // Calculate final classification based on the three questions
-  const calculateFinalClassification = (
-    isMandatory: boolean,
-    isTrainable: boolean,
-    willingToTrain: boolean
-  ): 'must-have' | 'nice-to-have' | 'will-train' => {
-    if (!isMandatory) {
-      return 'nice-to-have';
-    }
-    
-    // It's mandatory - but is it REALLY mandatory?
-    if (isTrainable && willingToTrain) {
-      return 'will-train'; // Not actually mandatory if you'll train it!
-    }
-    
-    return 'must-have'; // Truly mandatory - must have on day 1
-  };
-
   const handleAnswerChange = (
     reqId: string,
     field: 'isMandatory' | 'isTrainable' | 'willingToTrain',
@@ -62,22 +44,25 @@ export function RequirementClassificationV2({
     setRequirements(prev => {
       return prev.map(req => {
         if (req.id !== reqId) return req;
-        
+
         const updated = { ...req, [field]: value };
-        
-        // Auto-calculate final classification if all questions answered
-        if (
-          updated.isMandatory !== undefined &&
-          updated.isTrainable !== undefined &&
-          (updated.isMandatory === false || updated.willingToTrain !== undefined)
-        ) {
-          updated.finalClassification = calculateFinalClassification(
-            updated.isMandatory,
-            updated.isTrainable ?? false,
-            updated.willingToTrain ?? false
-          );
+
+        // Auto-calculate final classification based on new logic
+        if (updated.isMandatory !== undefined) {
+          // If must have on Day 1, classification is immediate
+          if (updated.isMandatory === true) {
+            updated.finalClassification = 'must-have';
+          }
+          // If not needed on Day 1, need to check trainability
+          else if (updated.isTrainable !== undefined) {
+            if (updated.isTrainable === false) {
+              updated.finalClassification = 'nice-to-have';
+            } else if (updated.willingToTrain !== undefined) {
+              updated.finalClassification = updated.willingToTrain ? 'will-train' : 'nice-to-have';
+            }
+          }
         }
-        
+
         return updated;
       });
     });
@@ -85,9 +70,9 @@ export function RequirementClassificationV2({
 
   const isRequirementComplete = (req: Requirement): boolean => {
     if (req.isMandatory === undefined) return false;
-    if (!req.isMandatory) return true; // If not mandatory, we're done
+    if (req.isMandatory === true) return true; // If must have on Day 1, we're done
     if (req.isTrainable === undefined) return false;
-    if (!req.isTrainable) return true; // If not trainable, we're done
+    if (req.isTrainable === false) return true; // If not trainable, we're done
     return req.willingToTrain !== undefined;
   };
 
@@ -136,9 +121,9 @@ export function RequirementClassificationV2({
       <Alert className="bg-blue-50 border-blue-200">
         <Info className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
-          If something is mandatory BUT you&apos;re willing to train it, 
-          then it&apos;s not actually mandatory! This helps you avoid rejecting great candidates 
-          who could learn on the job.
+          <strong>Day 1 = Must Have:</strong> Skills the candidate needs when they start.
+          {' '}<strong>Will Train:</strong> Skills you&apos;ll teach to the right person.
+          This helps you focus interviews on true Day 1 requirements.
         </AlertDescription>
       </Alert>
 
@@ -198,11 +183,11 @@ export function RequirementClassificationV2({
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Question 1: Is it mandatory? */}
+              {/* Question 1: Must have on Day 1? */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Label className="text-base font-medium">
-                    1. Is this mandatory for job success?
+                    1. Must the candidate already have this skill on Day 1?
                   </Label>
                   <TooltipProvider>
                     <Tooltip>
@@ -210,7 +195,7 @@ export function RequirementClassificationV2({
                         <HelpCircle className="h-4 w-4 text-gray-400" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Would someone fail in this role without this requirement?</p>
+                        <p>Does the candidate need to possess this skill when they start?</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -221,21 +206,21 @@ export function RequirementClassificationV2({
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="true" id={`${req.id}-mandatory-yes`} />
-                    <Label htmlFor={`${req.id}-mandatory-yes`}>Yes, absolutely required</Label>
+                    <Label htmlFor={`${req.id}-mandatory-yes`}>Yes, must have on Day 1</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="false" id={`${req.id}-mandatory-no`} />
-                    <Label htmlFor={`${req.id}-mandatory-no`}>No, nice to have but not essential</Label>
+                    <Label htmlFor={`${req.id}-mandatory-no`}>No, not needed on Day 1</Label>
                   </div>
                 </RadioGroup>
               </div>
 
-              {/* Question 2: Can it be trained? (Only show if mandatory) */}
-              {req.isMandatory === true && (
+              {/* Question 2: Can it be trained? (Only show if NOT needed on Day 1) */}
+              {req.isMandatory === false && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Label className="text-base font-medium">
-                      2. Can this requirement be trained/taught?
+                      2. Can this requirement be trained within 30-90 days?
                     </Label>
                     <TooltipProvider>
                       <Tooltip>
@@ -243,7 +228,7 @@ export function RequirementClassificationV2({
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Could someone learn this within 30-90 days on the job?</p>
+                          <p>Could someone learn this skill quickly on the job?</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -258,14 +243,14 @@ export function RequirementClassificationV2({
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="false" id={`${req.id}-trainable-no`} />
-                      <Label htmlFor={`${req.id}-trainable-no`}>No, must have on day 1</Label>
+                      <Label htmlFor={`${req.id}-trainable-no`}>No, cannot be easily trained</Label>
                     </div>
                   </RadioGroup>
                 </div>
               )}
 
-              {/* Question 3: Willing to train? (Only show if mandatory AND trainable) */}
-              {req.isMandatory === true && req.isTrainable === true && (
+              {/* Question 3: Willing to train? (Only show if NOT needed Day 1 AND trainable) */}
+              {req.isMandatory === false && req.isTrainable === true && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Label className="text-base font-medium">
@@ -298,13 +283,24 @@ export function RequirementClassificationV2({
                 </div>
               )}
 
-              {/* Logic explanation */}
-              {req.isMandatory === true && req.isTrainable === true && req.willingToTrain === true && (
-                <Alert className="bg-yellow-50 border-yellow-200">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-800">
-                    <strong>Important insight:</strong> Since you&apos;re willing to train this requirement, 
-                    it&apos;s not truly mandatory! You can hire someone without it and train them.
+              {/* Show confirmation for will-train classification */}
+              {req.isMandatory === false && req.isTrainable === true && req.willingToTrain === true && (
+                <Alert className="bg-green-50 border-green-200">
+                  <Info className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    <strong>Great!</strong> This will be classified as &quot;will-train&quot; -
+                    you&apos;ll generate interview questions to assess if candidates can learn this skill.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Show confirmation for must-have classification */}
+              {req.isMandatory === true && (
+                <Alert className="bg-red-50 border-red-200">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">
+                    <strong>Must Have on Day 1:</strong> Candidates must already possess this skill.
+                    Interview questions will assess their current proficiency.
                   </AlertDescription>
                 </Alert>
               )}
