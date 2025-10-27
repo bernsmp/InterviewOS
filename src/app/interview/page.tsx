@@ -17,7 +17,7 @@ export default function InterviewPage() {
 
   const handleSetupComplete = (jobDescription: string, requirements: Requirement[]) => {
     const questions = generateInterviewQuestions(requirements);
-    
+
     const script: InterviewScript = {
       id: `script-${Date.now()}`,
       companyName: "Your Company", // This would come from a form
@@ -29,7 +29,7 @@ export default function InterviewPage() {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     setInterviewScript(script);
     setStep("script");
   };

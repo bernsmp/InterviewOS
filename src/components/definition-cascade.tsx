@@ -322,11 +322,6 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
     setRequirements(prev => prev.filter(req => req.id !== id));
   };
 
-  const handleComplete = () => {
-    const validRequirements = requirements.filter(req => req.text.trim());
-    onComplete(jobDescription, validRequirements);
-  };
-
   return (
     <div className="space-y-6">
       {step === "input" && (
@@ -455,7 +450,9 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
           requirements={requirements}
           onComplete={(classifiedRequirements) => {
             setRequirements(classifiedRequirements);
-            handleComplete();
+            // Fix: Pass the fresh classifiedRequirements directly instead of using stale state
+            const validRequirements = classifiedRequirements.filter(req => req.text.trim());
+            onComplete(jobDescription, validRequirements);
           }}
           onBack={() => setStep("define")}
         />
