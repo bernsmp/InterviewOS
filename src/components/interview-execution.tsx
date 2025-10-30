@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Save, ArrowLeft } from "lucide-react";
 import { ConciseQuestionDisplay } from "@/components/concise-question-display";
 import type { InterviewScript, InterviewResponse } from "@/types/interview";
+import { useInterviewStorage } from "@/hooks/useLocalStorage";
 
 interface InterviewExecutionProps {
   script: InterviewScript;
@@ -23,6 +24,29 @@ export function InterviewExecution({ script, onComplete, onBack }: InterviewExec
   const allQuestions = script.questions;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, InterviewResponse>>({});
+
+  // Local storage integration
+  const { saveInterviewResponse, restoreSession } = useInterviewStorage();
+
+  // Restore saved responses on mount
+  useEffect(() => {
+    const savedData = restoreSession();
+    if (savedData) {
+      // Restore responses if any
+      if (savedData.interviewResponses && savedData.interviewResponses.length > 0) {
+        const responseMap: Record<string, InterviewResponse> = {};
+        savedData.interviewResponses.forEach(resp => {
+          responseMap[resp.questionId] = resp;
+        });
+        setResponses(responseMap);
+      }
+
+      // Restore current question index
+      if (savedData.currentQuestionIndex !== undefined) {
+        setCurrentIndex(savedData.currentQuestionIndex);
+      }
+    }
+  }, []);
   
   // Safety check
   if (allQuestions.length === 0) {
@@ -50,38 +74,58 @@ export function InterviewExecution({ script, onComplete, onBack }: InterviewExec
   );
 
   const handleScoreChange = (score: "pass" | "fail" | "maybe") => {
-    setResponses(prev => ({
-      ...prev,
+    const updatedResponses = {
+      ...responses,
       [currentQuestion.id]: {
-        ...prev[currentQuestion.id],
+        ...responses[currentQuestion.id],
         questionId: currentQuestion.id,
         score,
-        notes: prev[currentQuestion.id]?.notes || ""
+        notes: responses[currentQuestion.id]?.notes || ""
       }
-    }));
+    };
+    setResponses(updatedResponses);
+
+    // Save to localStorage
+    const allResponses = Object.values(updatedResponses);
+    saveInterviewResponse(allResponses, currentIndex, allQuestions.length);
   };
 
   const handleNotesChange = (notes: string) => {
-    setResponses(prev => ({
-      ...prev,
+    const updatedResponses = {
+      ...responses,
       [currentQuestion.id]: {
-        ...prev[currentQuestion.id],
+        ...responses[currentQuestion.id],
         questionId: currentQuestion.id,
-        score: prev[currentQuestion.id]?.score || "maybe",
+        score: responses[currentQuestion.id]?.score || "maybe",
         notes
       }
-    }));
+    };
+    setResponses(updatedResponses);
+
+    // Save to localStorage (debounced automatically by the hook)
+    const allResponses = Object.values(updatedResponses);
+    saveInterviewResponse(allResponses, currentIndex, allQuestions.length);
   };
 
   const handleNext = () => {
     if (currentIndex < allQuestions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+
+      // Save current index to localStorage
+      const allResponses = Object.values(responses);
+      saveInterviewResponse(allResponses, newIndex, allQuestions.length);
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+
+      // Save current index to localStorage
+      const allResponses = Object.values(responses);
+      saveInterviewResponse(allResponses, newIndex, allQuestions.length);
     }
   };
 

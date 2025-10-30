@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, FileSearch, Filter, Star, CheckCircle } from "lucide-react";
+import { ArrowRight, FileSearch, Filter, Star, CheckCircle, FolderOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 import { NavigationHeader } from "@/components/navigation-header";
@@ -43,21 +43,36 @@ export default function Home() {
         </motion.div>
       </HeroHighlight>
 
-      {/* CTA Button - Above the fold */}
+      {/* CTA Buttons - Above the fold */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-6">
-          <div className="text-center">
-            <Button 
-              asChild 
-              size="lg" 
-              className="text-xl px-14 py-8 rounded-full bg-gradient-to-r from-[#FC8A46] to-[#ff6b2b] hover:from-[#e87d3d] hover:to-[#ff5a1a] text-white font-bold shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
-              style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}
-            >
-              <Link href="/interview">
-                Start The Diagnostic
-                <ArrowRight className="ml-3 h-7 w-7" />
-              </Link>
-            </Button>
+          <div className="text-center space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                asChild
+                size="lg"
+                className="text-xl px-14 py-8 rounded-full bg-gradient-to-r from-[#FC8A46] to-[#ff6b2b] hover:from-[#e87d3d] hover:to-[#ff5a1a] text-white font-bold shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+                style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}
+              >
+                <Link href="/interview">
+                  Start The Diagnostic
+                  <ArrowRight className="ml-3 h-7 w-7" />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="text-xl px-14 py-8 rounded-full border-2 border-[#295B74] text-[#295B74] font-bold hover:bg-[#295B74] hover:text-white transition-all transform hover:scale-105"
+                style={{ fontFamily: 'Work Sans, sans-serif', fontWeight: 600 }}
+              >
+                <Link href="/sessions">
+                  View Saved Sessions
+                  <FolderOpen className="ml-3 h-7 w-7" />
+                </Link>
+              </Button>
+            </div>
             <p className="mt-4 text-[#6794A7] text-lg">
               No signup required • Free to use
             </p>

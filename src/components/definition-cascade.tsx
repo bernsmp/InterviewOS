@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { AlertCircle, ChevronRight, Loader2 } from "lucide-react";
 import { RequirementDefinition } from "./requirement-definition";
 import { RequirementClassificationV2 } from "./requirement-classification-v2";
 import type { Requirement, RequirementPriority } from "@/types/interview";
+import { useInterviewStorage } from "@/hooks/useLocalStorage";
 
 interface DefinitionCascadeProps {
   onComplete: (jobDescription: string, requirements: Requirement[]) => void;
@@ -21,6 +22,41 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
   const [step, setStep] = useState<"input" | "extract" | "define" | "classify">("input");
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState("");
+
+  // Local storage integration
+  const { saveJobDescription, saveRequirements, restoreSession } = useInterviewStorage();
+
+  // Restore saved data on mount
+  useEffect(() => {
+    const savedData = restoreSession();
+    if (savedData) {
+      // Restore job description
+      if (savedData.jobDescription) {
+        setJobDescription(savedData.jobDescription);
+      }
+
+      // Restore requirements and determine the appropriate step
+      if (savedData.requirements && savedData.requirements.length > 0) {
+        setRequirements(savedData.requirements);
+
+        // Determine which step to restore to based on the state of requirements
+        const hasClassifications = savedData.requirements.some(r => r.finalClassification);
+        const hasDefinitions = savedData.requirements.some(r => r.definition);
+
+        if (hasClassifications) {
+          // If requirements are classified, they're ready to proceed
+          // The parent component will handle moving to the script step
+          setStep("classify");
+        } else if (hasDefinitions) {
+          setStep("classify");
+        } else if (savedData.extractedRequirements) {
+          setStep("extract");
+        } else {
+          setStep("input");
+        }
+      }
+    }
+  }, []);
 
   const extractRequirements = async () => {
     setIsExtracting(true);
@@ -40,13 +76,16 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
       
       if (data.requirements && data.requirements.length > 0) {
         // Use Gemini's extracted requirements
-        setRequirements(
-          data.requirements.map((text: string, index: number) => ({
-            id: `req-${index}`,
-            text,
-            priority: "trainable" as RequirementPriority
-          }))
-        );
+        const extractedReqs = data.requirements.map((text: string, index: number) => ({
+          id: `req-${index}`,
+          text,
+          priority: "trainable" as RequirementPriority
+        }));
+        setRequirements(extractedReqs);
+
+        // Save to localStorage
+        saveJobDescription(jobDescription, data.requirements);
+        saveRequirements(extractedReqs);
       } else if (data.error) {
         // Fall back to local extraction if Gemini fails
         setExtractionError("AI extraction unavailable, using local extraction");
@@ -87,14 +126,18 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
     
     // Smart processing: clean, normalize, and deduplicate
     const processedRequirements = smartProcessRequirements(rawRequirements);
-    
-    setRequirements(
-      processedRequirements.map((text, index) => ({
-        id: `req-${index}`,
-        text,
-        priority: "trainable" as RequirementPriority
-      }))
-    );
+
+    const localReqs = processedRequirements.map((text, index) => ({
+      id: `req-${index}`,
+      text,
+      priority: "trainable" as RequirementPriority
+    }));
+
+    setRequirements(localReqs);
+
+    // Save to localStorage
+    saveJobDescription(jobDescription, processedRequirements);
+    saveRequirements(localReqs);
   };
   
   const isLikelyRequirement = (text: string): boolean => {
@@ -307,19 +350,26 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
       text: "",
       priority: "trainable"
     };
-    setRequirements([...requirements, newRequirement]);
+    const updatedReqs = [...requirements, newRequirement];
+    setRequirements(updatedReqs);
+    // Save to localStorage
+    saveRequirements(updatedReqs);
   };
 
   const updateRequirementText = (id: string, text: string) => {
-    setRequirements(prev =>
-      prev.map(req =>
-        req.id === id ? { ...req, text } : req
-      )
+    const updatedReqs = requirements.map(req =>
+      req.id === id ? { ...req, text } : req
     );
+    setRequirements(updatedReqs);
+    // Save to localStorage
+    saveRequirements(updatedReqs);
   };
 
   const removeRequirement = (id: string) => {
-    setRequirements(prev => prev.filter(req => req.id !== id));
+    const updatedReqs = requirements.filter(req => req.id !== id);
+    setRequirements(updatedReqs);
+    // Save to localStorage
+    saveRequirements(updatedReqs);
   };
 
   return (
@@ -439,6 +489,8 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
           requirements={requirements}
           onComplete={(definedRequirements) => {
             setRequirements(definedRequirements);
+            // Save defined requirements to localStorage
+            saveRequirements(definedRequirements);
             setStep("classify");
           }}
           onBack={() => setStep("extract")}
@@ -450,6 +502,8 @@ export function DefinitionCascade({ onComplete }: DefinitionCascadeProps) {
           requirements={requirements}
           onComplete={(classifiedRequirements) => {
             setRequirements(classifiedRequirements);
+            // Save classified requirements to localStorage
+            saveRequirements(classifiedRequirements);
             // Fix: Pass the fresh classifiedRequirements directly instead of using stale state
             const validRequirements = classifiedRequirements.filter(req => req.text.trim());
             onComplete(jobDescription, validRequirements);
